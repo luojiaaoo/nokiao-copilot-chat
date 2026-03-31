@@ -1,0 +1,2 @@
+recursive-include nokiao_copilot_chat/** *.js *.css *.json *.html
+prune tests
