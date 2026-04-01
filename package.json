@@ -14,8 +14,9 @@
     "format":  "prettier --write src --ignore-path=.prettierignore"
   },
   "devDependencies": {
-    "@copilotkit/react-core": "^1.10.6",
-    "@copilotkit/react-ui": "^1.10.6",
+    "@copilotkit/react-core": "1.52.1",
+    "@copilotkit/react-ui": "1.52.1",
+    "@copilotkit/runtime": "1.52.1",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "css-loader": "^6.10.0",
