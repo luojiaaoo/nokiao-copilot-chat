@@ -7,7 +7,6 @@ import "@copilotkit/react-ui/styles.css";
 import "./NokiaoCopilotChat.css";
 
 type ChatMessage = {
-  id?: string;
   role?: string;
   content?: unknown;
   text?: string;
@@ -128,47 +127,34 @@ const AssistantMessageNoFeedback = (props: AssistantMessagePropsLite) => {
   );
 };
 
-function toText(content: unknown): string {
-  if (typeof content === "string") {
-    return content;
+function stringifyContent(input: unknown): string {
+  if (typeof input === "string") {
+    return input;
   }
-  if (Array.isArray(content)) {
-    return content
-      .map((item) => {
-        if (typeof item === "string") {
-          return item;
-        }
-        if (item && typeof item === "object") {
-          const obj = item as Record<string, unknown>;
-          if (typeof obj.text === "string") {
-            return obj.text;
-          }
-          if (typeof obj.content === "string") {
-            return obj.content;
-          }
-        }
-        return "";
-      })
-      .filter(Boolean)
-      .join("\n");
+
+  if (Array.isArray(input)) {
+    return input.map((item) => stringifyContent(item)).filter(Boolean).join("\n");
   }
-  if (content && typeof content === "object") {
-    const obj = content as Record<string, unknown>;
-    if (typeof obj.text === "string") {
-      return obj.text;
-    }
-    if (typeof obj.content === "string") {
-      return obj.content;
-    }
-    if (typeof obj.value === "string") {
-      return obj.value;
-    }
-    if (Array.isArray(obj.parts)) {
-      return toText(obj.parts);
-    }
-    if (Array.isArray(obj.content)) {
-      return toText(obj.content);
-    }
+
+  if (!input || typeof input !== "object") {
+    return "";
+  }
+
+  const obj = input as Record<string, unknown>;
+  if (typeof obj.text === "string") {
+    return obj.text;
+  }
+  if (typeof obj.content === "string") {
+    return obj.content;
+  }
+  if (typeof obj.value === "string") {
+    return obj.value;
+  }
+  if (Array.isArray(obj.parts)) {
+    return stringifyContent(obj.parts);
+  }
+  if (Array.isArray(obj.content)) {
+    return stringifyContent(obj.content);
   }
   return "";
 }
@@ -181,12 +167,9 @@ function extractMessageText(message: ChatMessage): string {
     return message.content;
   }
   if (Array.isArray(message.parts)) {
-    return message.parts
-      .map((part) => part.text || part.content || "")
-      .filter(Boolean)
-      .join("\n");
+    return stringifyContent(message.parts);
   }
-  return toText(message.content);
+  return stringifyContent(message.content);
 }
 
 function computeLastMessages(messages: unknown): {
