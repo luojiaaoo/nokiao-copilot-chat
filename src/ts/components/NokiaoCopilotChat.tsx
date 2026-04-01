@@ -304,6 +304,8 @@ const NokiaoCopilotChat = (props: Props) => {
         agent={agent}
         threadId={thread_id}
         agents__unsafe_dev_only={localAgents}
+        showDevConsole={false}
+        enableInspector={false}
       >
         <BridgeObserver
           setProps={setProps}
