@@ -1,14 +1,38 @@
 # nokiao_copilot_chat
 
-Dash component wrapper for CopilotKit chat UI, designed for Agno AGUI runtime integration.
+一个面向 Agno AG-UI 集成的 CopilotKit Chat UI Dash 组件封装。
 
-## Install
+![UI Screenshot](screenshot/PixPin_2026-04-01_14-21-27.jpg)
 
-```shell
+## 功能特性
+
+- Dash 组件：`NokiaoCopilotChat`
+- 通过 AG-UI 接口（`agui_url`）驱动的纯前端聊天
+- 用于 Dash 状态同步的回调桥接属性：
+  `thread_id`, `last_user_message`, `last_assistant_message`, `is_running`, `event_seq`
+- 内置实用 UI 调整（固定高度聊天区、代码块工具栏优化）
+
+## 安装
+
+```bash
 pip install nokiao_copilot_chat
 ```
 
-## Quick Start (Agno AGUI)
+## 快速开始
+
+1. 启动 AG-UI 服务：
+
+```bash
+python agent_os.py
+```
+
+2. 运行 Dash 示例：
+
+```bash
+python usage.py
+```
+
+## 最小示例
 
 ```python
 import dash
@@ -21,13 +45,15 @@ app.layout = html.Div(
     [
         ncc.NokiaoCopilotChat(
             id="copilot-chat",
+            agent="Assistant",
             agui_url="http://localhost:8000/agui",
             headers={"Authorization": "Bearer <YOUR_TOKEN>"},
             labels={
                 "initial": "Hi, how can I help you today?",
                 "placeholder": "Ask anything...",
             },
-        )
+            style={"maxWidth": "920px", "margin": "24px auto", "height": "600px"},
+        ),
     ]
 )
 
@@ -35,125 +61,103 @@ if __name__ == "__main__":
     app.run(debug=True)
 ```
 
-### Runtime Topology
+## Dash 回调桥接
 
-- Pure frontend mode:
-  Dash frontend -> Agno AG-UI endpoint (`/agui`)
-- Dash frontend -> `@copilotkit/runtime` endpoint (`/copilotkit`)
-- Runtime endpoint -> Agno AG-UI endpoint (`/agui`)
+推荐使用 `event_seq` 作为回调触发器，其它属性用于读取最新状态快照。
 
-Use `agui_url` for pure frontend mode (no extra runtime process), or `runtime_url` for the official Copilot Runtime proxy chain.
-
-### Start Services
-
-1. Start Agno AG-UI server:
-   ```shell
-   python agent_os.py
-   ```
-2. Optional: start runtime proxy (only when using `runtime_url`):
-   ```shell
-   npm run dev:runtime-proxy
-   ```
-3. Run Dash app:
-   ```shell
-   python usage.py
-   ```
-
-### Bridge Props for Dash Callbacks
-
-- Output props: `thread_id`, `last_user_message`, `last_assistant_message`, `is_running`, `event_seq`
-- Use `event_seq` as callback trigger, read the other fields as state snapshot.
-
-## Development
-### Getting Started
-
-1. Create a new python environment:
-   ```shell
-   python -m venv venv
-   . venv/bin/activate
-   ```
-   _Note: venv\Scripts\activate for windows_
-
-2. Install python dependencies:
-   ```shell
-   pip install -r requirements.txt
-   ```
-3. Install npm packages:
-   1. Optional: use [nvm](https://github.com/nvm-sh/nvm) to manage node version:
-      ```shell
-      nvm install
-      nvm use
-      ```
-   2. Install:
-      ```shell
-      npm install
-      ```
-4. Build:
-   ```shell
-   npm run build
-   ```
-
-
-### Create a production build and publish:
-
-1. Clean up build and  dist - removes old and temp tarballs:
-```
-rm -rf dist build
+```python
+@app.callback(
+    Output("chat-state", "children"),
+    Input("copilot-chat", "event_seq"),
+    [
+        State("copilot-chat", "thread_id"),
+        State("copilot-chat", "last_user_message"),
+        State("copilot-chat", "last_assistant_message"),
+        State("copilot-chat", "is_running"),
+    ],
+)
+def show_bridge_state(_, thread_id, last_user, last_assistant, is_running):
+    return (
+        f"thread_id: {thread_id}\n"
+        f"is_running: {is_running}\n"
+        f"last_user_message: {last_user}\n"
+        f"last_assistant_message: {last_assistant}"
+    )
 ```
 
+## 当前运行拓扑
 
-2. Run a new build
+当前组件 API 直接暴露 `agui_url`（AG-UI 端点）。
+
+```text
+Dash frontend -> Agno AG-UI endpoint (/agui)
 ```
+
+## 开发指南
+
+### 环境准备
+
+1. 创建虚拟环境：
+
+```bash
+python -m venv venv
+```
+
+Windows：
+
+```bash
+venv\Scripts\activate
+```
+
+macOS/Linux：
+
+```bash
+source venv/bin/activate
+```
+
+2. 安装依赖：
+
+```bash
+pip install -r requirements.txt
 npm install
+```
+
+3. 构建：
+
+```bash
 npm run build
 ```
 
-3. Build source distribution.  
-```
+### 常用命令
+
+```bash
+npm run build:js::dev
+npm run build:js
+npm run build:backends
 npm run dist
 ```
 
-4. Test your tarball by copying it into a new environment and installing it locally, for example:
-```
-pip install <your-project-name-version>.tar.gz
-```
+### 发布
 
-Note:  For local install, use:
+构建发布产物：
 
-```
-pip install -e ./path-to-project
+```bash
+npm run dist
 ```
 
+上传到 PyPI：
 
-5. Publish on PyPI
-
-Prepare release on the GitHub UI - For more information see [Managing Releases](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository)
-When in doubt, do an alpha release first
+```bash
+twine upload dist/*
 ```
-$ twine upload dist/*
+
+## Justfile
+
+如果你使用 `just`：
+
+```bash
+just install
+just build
+just publish
+just -l
 ```
-6. If publish on npm:
-
-Note: Publishing your component to NPM will make the JavaScript bundles available on the unpkg CDN. By default, Dash serves the component library's CSS and JS locally, but if you choose to publish the package to NPM you can set `serve_locally` to `False` and you may see faster load times.
-```
-npm publish
-``` 
-
-
-### Justfile
-
-Alternatively, use the provided [just](https://github.com/casey/just) commands:
-
-1. Create a Python environment from previous step 1 and install:
-   ```shell
-   just install
-   ```
-2. Build
-   ```shell
-   just build
-   ```
-3. Publish
-   ```shell
-   just publish
-   ```
-4. See all commands with `just -l`

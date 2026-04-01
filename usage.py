@@ -1,8 +1,8 @@
 import nokiao_copilot_chat as ncc
 import dash
-from dash import html, Input, Output
+from dash import html, Input, Output, State
 
-app = dash.Dash()
+app = dash.Dash(__name__)
 
 app.layout = html.Div(
     [
@@ -25,10 +25,12 @@ app.layout = html.Div(
 @app.callback(
     Output("chat-state", "children"),
     Input("copilot-chat", "event_seq"),
-    Input("copilot-chat", "thread_id"),
-    Input("copilot-chat", "last_user_message"),
-    Input("copilot-chat", "last_assistant_message"),
-    Input("copilot-chat", "is_running"),
+    [
+        State("copilot-chat", "thread_id"),
+        State("copilot-chat", "last_user_message"),
+        State("copilot-chat", "last_assistant_message"),
+        State("copilot-chat", "is_running"),
+    ],
 )
 def show_bridge_state(_, thread_id, last_user, last_assistant, is_running):
     return (
@@ -39,5 +41,5 @@ def show_bridge_state(_, thread_id, last_user, last_assistant, is_running):
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
