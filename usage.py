@@ -15,7 +15,7 @@ app.layout = html.Div(
                 "initial": "Hi, how can I help you today?",
                 "placeholder": "Ask anything...",
             },
-            style={"maxWidth": "920px", "margin": "24px auto"},
+            style={"maxWidth": "920px", "margin": "24px auto", "height": "600px"},
         ),
         html.Pre(id="chat-state", style={"whiteSpace": "pre-wrap"}),
     ]

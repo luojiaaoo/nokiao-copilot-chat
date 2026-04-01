@@ -298,7 +298,7 @@ const NokiaoCopilotChat = (props: Props) => {
   }, [labels, placeholder]);
 
   return (
-    <div id={id} style={style as React.CSSProperties}>
+    <div id={id} className="nokiaoCopilotChatRoot" style={style as React.CSSProperties}>
       <CopilotKit
         runtimeUrl={agui_url}
         headers={headers}
