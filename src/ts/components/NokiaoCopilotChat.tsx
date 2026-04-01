@@ -1,6 +1,7 @@
 import React, {useEffect, useMemo, useRef} from "react";
 import {CopilotKit, useCopilotChat, useCopilotContext} from "@copilotkit/react-core";
 import {CopilotChat, Markdown, useChatContext} from "@copilotkit/react-ui";
+import {HttpAgent} from "@ag-ui/client";
 import {DashComponentProps} from "../props";
 import "@copilotkit/react-ui/styles.css";
 
@@ -32,8 +33,8 @@ type BridgePayload = {
 type Props = {
   /** Dash component id. */
   id?: string;
-  /** Copilot/AGUI runtime URL. */
-  runtime_url: string;
+  /** Direct AG-UI endpoint URL (for example `http://localhost:8000/agui`) for pure frontend mode. */
+  agui_url?: string;
   /** Extra request headers, for example Authorization. */
   headers?: Record<string, string>;
   /** Optional agent name. */
@@ -261,7 +262,7 @@ function BridgeObserver(props: {
 const NokiaoCopilotChat = (props: Props) => {
   const {
     id,
-    runtime_url,
+    agui_url,
     headers,
     agent,
     placeholder,
@@ -276,6 +277,18 @@ const NokiaoCopilotChat = (props: Props) => {
     show_feedback_buttons,
   } = props;
 
+  const localAgents = useMemo(() => {
+    if (!agui_url) {
+      return undefined;
+    }
+    const agentId = agent || "default";
+    return {
+      [agentId]: new HttpAgent({
+        url: agui_url,
+      }),
+    };
+  }, [agui_url, agent]);
+
   const mergedLabels = useMemo(() => {
     return {
       ...(labels || {}),
@@ -285,7 +298,13 @@ const NokiaoCopilotChat = (props: Props) => {
 
   return (
     <div id={id} style={style as React.CSSProperties}>
-      <CopilotKit runtimeUrl={runtime_url} headers={headers} agent={agent} threadId={thread_id}>
+      <CopilotKit
+        runtimeUrl={agui_url}
+        headers={headers}
+        agent={agent}
+        threadId={thread_id}
+        agents__unsafe_dev_only={localAgents}
+      >
         <BridgeObserver
           setProps={setProps}
           defaults={{

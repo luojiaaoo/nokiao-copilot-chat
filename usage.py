@@ -9,7 +9,7 @@ app.layout = html.Div(
         ncc.NokiaoCopilotChat(
             id="copilot-chat",
             agent="Assistant",
-            runtime_url="http://localhost:8000/agui",
+            agui_url="http://localhost:8000/agui",
             headers={"Authorization": "Bearer <YOUR_TOKEN>"},
             labels={
                 "initial": "Hi, how can I help you today?",

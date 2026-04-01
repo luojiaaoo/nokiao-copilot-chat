@@ -21,7 +21,7 @@ app.layout = html.Div(
     [
         ncc.NokiaoCopilotChat(
             id="copilot-chat",
-            runtime_url="http://localhost:8000/agui",
+            agui_url="http://localhost:8000/agui",
             headers={"Authorization": "Bearer <YOUR_TOKEN>"},
             labels={
                 "initial": "Hi, how can I help you today?",
@@ -34,6 +34,30 @@ app.layout = html.Div(
 if __name__ == "__main__":
     app.run(debug=True)
 ```
+
+### Runtime Topology
+
+- Pure frontend mode:
+  Dash frontend -> Agno AG-UI endpoint (`/agui`)
+- Dash frontend -> `@copilotkit/runtime` endpoint (`/copilotkit`)
+- Runtime endpoint -> Agno AG-UI endpoint (`/agui`)
+
+Use `agui_url` for pure frontend mode (no extra runtime process), or `runtime_url` for the official Copilot Runtime proxy chain.
+
+### Start Services
+
+1. Start Agno AG-UI server:
+   ```shell
+   python agent_os.py
+   ```
+2. Optional: start runtime proxy (only when using `runtime_url`):
+   ```shell
+   npm run dev:runtime-proxy
+   ```
+3. Run Dash app:
+   ```shell
+   python usage.py
+   ```
 
 ### Bridge Props for Dash Callbacks
 
