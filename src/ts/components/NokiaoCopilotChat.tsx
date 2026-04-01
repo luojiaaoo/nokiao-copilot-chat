@@ -280,7 +280,7 @@ const NokiaoCopilotChat = (props: Props) => {
     show_feedback_buttons,
   } = props;
 
-  const localAgents = useMemo(() => {
+  const selfManagedAgents = useMemo(() => {
     if (!agui_url) {
       return undefined;
     }
@@ -306,7 +306,7 @@ const NokiaoCopilotChat = (props: Props) => {
         headers={headers}
         agent={agent}
         threadId={thread_id}
-        agents__unsafe_dev_only={localAgents}
+        selfManagedAgents={selfManagedAgents}
         useSingleEndpoint={false}
         showDevConsole={false}
         enableInspector={false}
