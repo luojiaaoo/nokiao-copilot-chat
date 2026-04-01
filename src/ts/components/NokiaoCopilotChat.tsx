@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef} from "react";
-import {CopilotKit, useCopilotChat, useCopilotContext} from "@copilotkit/react-core";
+import {CopilotKit, useCopilotChatInternal, useCopilotContext} from "@copilotkit/react-core";
 import {CopilotChat, Markdown, useChatContext} from "@copilotkit/react-ui";
 import {HttpAgent} from "@ag-ui/client";
 import {DashComponentProps} from "../props";
@@ -7,6 +7,7 @@ import "@copilotkit/react-ui/styles.css";
 import "./NokiaoCopilotChat.css";
 
 type ChatMessage = {
+  id?: string;
   role?: string;
   content?: unknown;
   text?: string;
@@ -156,6 +157,18 @@ function toText(content: unknown): string {
     if (typeof obj.text === "string") {
       return obj.text;
     }
+    if (typeof obj.content === "string") {
+      return obj.content;
+    }
+    if (typeof obj.value === "string") {
+      return obj.value;
+    }
+    if (Array.isArray(obj.parts)) {
+      return toText(obj.parts);
+    }
+    if (Array.isArray(obj.content)) {
+      return toText(obj.content);
+    }
   }
   return "";
 }
@@ -219,13 +232,15 @@ function BridgeObserver(props: {
   };
 }) {
   const {setProps, defaults} = props;
-  const {visibleMessages, isLoading} = useCopilotChat();
+  const {messages, visibleMessages, isLoading} = useCopilotChatInternal();
   const {threadId} = useCopilotContext();
   const eventSeqRef = useRef(0);
   const lastSentRef = useRef("");
 
   useEffect(() => {
-    const lastMessages = computeLastMessages(visibleMessages);
+    const sourceMessages =
+      Array.isArray(messages) && messages.length > 0 ? messages : visibleMessages;
+    const lastMessages = computeLastMessages(sourceMessages);
     const payload: BridgePayload = {
       thread_id: threadId || defaults.thread_id,
       last_user_message: lastMessages.last_user_message || defaults.last_user_message,
@@ -234,7 +249,10 @@ function BridgeObserver(props: {
       is_running: isLoading ?? defaults.is_running ?? false,
     };
 
-    const signature = JSON.stringify(payload);
+    const signature = JSON.stringify({
+      payload,
+      message_count: Array.isArray(sourceMessages) ? sourceMessages.length : 0,
+    });
     if (signature === lastSentRef.current) {
       return;
     }
@@ -251,6 +269,7 @@ function BridgeObserver(props: {
     defaults.last_user_message,
     defaults.thread_id,
     isLoading,
+    messages,
     setProps,
     threadId,
     visibleMessages,
