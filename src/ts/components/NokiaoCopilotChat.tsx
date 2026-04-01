@@ -304,6 +304,7 @@ const NokiaoCopilotChat = (props: Props) => {
         agent={agent}
         threadId={thread_id}
         agents__unsafe_dev_only={localAgents}
+        useSingleEndpoint={false}
         showDevConsole={false}
         enableInspector={false}
       >
