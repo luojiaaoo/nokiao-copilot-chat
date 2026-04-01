@@ -15,7 +15,7 @@
 ## 安装
 
 ```bash
-pip install nokiao_copilot_chat
+pip install nokiao-copilot-chat
 ```
 
 ## 快速开始
