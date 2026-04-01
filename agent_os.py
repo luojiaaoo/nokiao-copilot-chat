@@ -46,8 +46,8 @@ async def agui_info_compat_middleware(request: Request, call_next):
                         "version": "1.0.0",
                         "audioFileTranscriptionEnabled": False,
                         "agents": {
-                            "default": {
-                                "name": chat_agent.name or "Assistant",
+                            chat_agent.name: {
+                                "name": chat_agent.name,
                                 "className": "agno-agent",
                                 "description": "Default AGUI agent exposed for CopilotKit runtimeUrl",
                             }
