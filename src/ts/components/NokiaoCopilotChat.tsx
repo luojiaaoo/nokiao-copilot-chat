@@ -4,6 +4,7 @@ import {CopilotChat, Markdown, useChatContext} from "@copilotkit/react-ui";
 import {HttpAgent} from "@ag-ui/client";
 import {DashComponentProps} from "../props";
 import "@copilotkit/react-ui/styles.css";
+import "./NokiaoCopilotChat.css";
 
 type ChatMessage = {
   role?: string;
